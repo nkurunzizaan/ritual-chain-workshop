@@ -12,7 +12,7 @@ This contract adds a staking mechanism to the commit-reveal bounty system. Parti
 Staking discourages spam submissions and incentivizes honest participation.
 
 ## Contract Address (Ritual Testnet)
- 0x96499AEE94ef646E878A09FaffbABD007F7c2931
+ 0x4E6b6091A6E5De16612f19a94aD81c86c59db48C
 
 ## Network
 Ritual Chain Testnet (ID: 1979)
