@@ -88,7 +88,7 @@ contract StakedAIBounty {
         uint256 revealDuration,
         uint256 minStake
     ) external payable {
-        require(msg.value > 0, "Reward must be > 0");
+        require(msg.value > 0, "Reward must be > 0 RIT");
         require(commitDeadline > block.timestamp, "Deadline must be in future");
         require(revealDuration > 0, "Reveal duration must be > 0");
         require(minStake > 0, "Minimum stake must be > 0");
@@ -149,7 +149,7 @@ contract StakedAIBounty {
         emit AnswerRevealed(id, msg.sender, answer);
     }
 
-    function judgeAll(uint256 id, bytes calldata ) external 
+    function judgeAll(uint256 id, bytes calldata _llmInput) external 
         challengeExists(id)
         onlyChallengeOwner(id)
         onlyAfterReveal(id)

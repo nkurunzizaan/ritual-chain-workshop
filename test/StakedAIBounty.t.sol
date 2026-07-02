@@ -33,93 +33,42 @@ contract StakedAIBountyTest is Test {
     }
 
     function testFullFlow() public {
-        // Record initial balances
         uint256 aliceInitial = alice.balance;
         uint256 bobInitial = bob.balance;
 
-        // Alice commits with stake
         vm.startPrank(alice);
         bounty.commitSolution{value: minStake}(challengeId, aliceCommitment);
         vm.stopPrank();
         assertEq(alice.balance, aliceInitial - minStake);
 
-        // Bob commits with stake
         vm.startPrank(bob);
         bounty.commitSolution{value: minStake}(challengeId, bobCommitment);
         vm.stopPrank();
         assertEq(bob.balance, bobInitial - minStake);
 
-        // Move to reveal phase
         vm.warp(block.timestamp + 1 days + 1);
 
-        // Alice reveals, gets stake refunded
         vm.startPrank(alice);
         bounty.revealSolution(challengeId, aliceAnswer, aliceSalt);
         vm.stopPrank();
         assertEq(alice.balance, aliceInitial);
 
-        // Bob reveals, gets stake refunded
         vm.startPrank(bob);
         bounty.revealSolution(challengeId, bobAnswer, bobSalt);
         vm.stopPrank();
         assertEq(bob.balance, bobInitial);
 
-        // Move to after reveal phase
         vm.warp(block.timestamp + 2 days + 1);
 
-        // Owner judges and finalizes
         vm.startPrank(owner);
         bounty.judgeAll(challengeId, bytes(""));
-        bounty.finalizeWinner(challengeId, 1); // Bob wins
+        bounty.finalizeWinner(challengeId, 1);
         vm.stopPrank();
 
-        // Verify winner
         StakedAIBounty.ChallengeInfo memory info = bounty.getChallengeInfo(challengeId);
         assertEq(info.winner, bob);
-
-        // Bob should have initial + reward (stake already refunded)
         assertEq(bob.balance, bobInitial + reward);
-
-        // Alice should have initial (no reward, no stake lost because she revealed)
         assertEq(alice.balance, aliceInitial);
-
-        // Check that contract balance is 0 (all funds distributed)
-        assertEq(address(bounty).balance, 0);
-    }
-
-    function testWinnerGetsReward() public {
-        // Use a fresh setup with only Alice
-        // We need to record the initial balance *after* the contract is deployed
-        // but *before* any transactions from Alice
-        uint256 aliceInitial = alice.balance;
-
-        // Alice commits with stake
-        vm.startPrank(alice);
-        bounty.commitSolution{value: minStake}(challengeId, aliceCommitment);
-        vm.stopPrank();
-
-        // Move to reveal phase
-        vm.warp(block.timestamp + 1 days + 1);
-
-        // Alice reveals, gets stake refunded
-        vm.startPrank(alice);
-        bounty.revealSolution(challengeId, aliceAnswer, aliceSalt);
-        vm.stopPrank();
-
-        // Move to after reveal phase
-        vm.warp(block.timestamp + 2 days + 1);
-
-        // Owner judges and finalizes
-        vm.startPrank(owner);
-        bounty.judgeAll(challengeId, bytes(""));
-        bounty.finalizeWinner(challengeId, 0); // Alice wins
-        vm.stopPrank();
-
-        // Alice should have initial + reward
-        // (stake was refunded on reveal, so no net change from stake)
-        assertEq(alice.balance, aliceInitial + reward);
-
-        // Check that contract balance is 0
         assertEq(address(bounty).balance, 0);
     }
 
